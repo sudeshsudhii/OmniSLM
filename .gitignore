@@ -1,0 +1,62 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# ---- Virtual Environments ----
+.venv/
+venv/
+env/
+
+# ---- Environment ----
+.env
+.env.local
+.env.*.local
+
+# ---- IDE ----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ---- Docker ----
+docker-compose.override.yml
+
+# ---- Testing ----
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# ---- Logs ----
+logs/
+*.log
+
+# ---- Models (large files) ----
+models/*.gguf
+models/*.bin
+models/*.safetensors
+
+# ---- Uploads ----
+uploads/
+
+# ---- Node (for web/) ----
+node_modules/
+.next/
+out/
+
+# ---- Flutter (for mobile/) ----
+mobile/.dart_tool/
+mobile/build/

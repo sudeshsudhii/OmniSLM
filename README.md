@@ -38,16 +38,16 @@ By leveraging local runtimes (Ollama, vLLM, llama.cpp), organizations can:
 
 ## Features
 
-- 🧠 **Multi-Runtime Model Engine** — Ollama, llama.cpp, vLLM, HuggingFace
-- 📄 **RAG Pipeline** — PDF, DOCX, Web, GitHub → Chunk → Embed → Retrieve → Rerank
-- 🤖 **Agent Framework** — Planner, Research, Coding, Reviewer, Executor agents
-- 🔧 **Tool Calling** — Calculator, file ops, database, REST APIs, custom plugins
-- 🔄 **Workflow Engine** — DAG pipelines, scheduling, agent orchestration
-- 💾 **4-Tier Memory** — Session, conversation, long-term, user memory
-- 🏢 **Enterprise** — Multi-tenancy, RBAC, OAuth2, audit logs, billing
-- 📱 **Cross-Platform** — Web (Next.js), Mobile (Flutter), Desktop (Flutter)
-- 📊 **Observability** — Prometheus metrics, structured logging, OpenTelemetry tracing
-- 🚀 **Deploy Anywhere** — Docker Compose, Kubernetes, or bare metal
+- **Multi-Runtime Model Engine** — Ollama, llama.cpp, vLLM, HuggingFace
+- **RAG Pipeline** — PDF, DOCX, Web, GitHub → Chunk → Embed → Retrieve → Rerank
+- **Agent Framework** — Planner, Research, Coding, Reviewer, Executor agents
+- **Tool Calling** — Calculator, file ops, database, REST APIs, custom plugins
+- **Workflow Engine** — DAG pipelines, scheduling, agent orchestration
+- **4-Tier Memory** — Session, conversation, long-term, user memory
+- **Enterprise** — Multi-tenancy, RBAC, OAuth2, audit logs, billing
+- **Cross-Platform** — Web (Next.js), Mobile (Flutter), Desktop (Flutter)
+- **Observability** — Prometheus metrics, structured logging, OpenTelemetry tracing
+- **Deploy Anywhere** — Docker Compose, Kubernetes, or bare metal
 
 ## Supported Models
 

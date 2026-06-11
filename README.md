@@ -1,9 +1,4 @@
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-3.11+-blue.svg" alt="Python Version">
-  <img src="https://img.shields.io/badge/FastAPI-0.100+-green.svg" alt="FastAPI">
-  <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License">
-  <img src="https://img.shields.io/badge/Status-Active-success.svg" alt="Status">
-</p>
+
 
 <h1 align="center">OmniSLM</h1>
 

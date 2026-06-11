@@ -67,37 +67,37 @@ By leveraging local runtimes (Ollama, vLLM, llama.cpp), organizations can:
 
 ```mermaid
 graph TD
-    subgraph Clients
+    subgraph Clients [Clients]
         W[Web / Next.js]
         M[Mobile / Flutter]
         D[Desktop / Flutter]
     end
 
-    subgraph API Gateway
+    subgraph API_Gateway [API Gateway]
         A[FastAPI Gateway]
         Auth[Auth & Rate Limiting]
     end
 
-    subgraph Application Services
+    subgraph App_Services [Application Services]
         Chat[Chat Service]
         RAG[RAG Service]
         Agent[Agent Orchestrator]
         Mem[Memory Manager]
     end
 
-    subgraph Core Domain
+    subgraph Core_Domain [Core Domain]
         PE[Prompt Engine]
         ME[Memory Engine]
         AF[Agent Framework]
     end
 
-    subgraph Inference Layer
+    subgraph Inference_Layer [Inference Layer]
         OL[Ollama]
         LL[llama.cpp]
         VL[vLLM]
     end
 
-    subgraph Data Storage
+    subgraph Data_Storage [Data Storage]
         PG[(PostgreSQL)]
         RD[(Redis)]
         QD[(Qdrant Vector DB)]
@@ -127,9 +127,9 @@ graph TD
 sequenceDiagram
     participant User
     participant API as FastAPI
-    participant Orchestrator as Agent Orchestrator
-    participant RAG as RAG Service
-    participant LLM as Inference Engine
+    participant Orchestrator as Agent_Orchestrator
+    participant RAG as RAG_Service
+    participant LLM as Inference_Engine
     
     User->>API: Send prompt
     API->>Orchestrator: Route Request
@@ -148,14 +148,14 @@ sequenceDiagram
 
 ```mermaid
 graph LR
-    subgraph Background Ingestion Task
+    subgraph Ingestion_Task [Background Ingestion Task]
         Doc[Documents / Web] --> L[Loaders]
         L --> S[Splitters]
         S --> E[Embedder Model]
         E --> VDB[(Qdrant Vector DB)]
     end
 
-    subgraph Real-time Query Pipeline
+    subgraph Query_Pipeline [Real-time Query Pipeline]
         Q[User Query] --> QE[Embed Query]
         QE --> VDB
         VDB --> C[Retrieved Context]

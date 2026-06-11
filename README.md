@@ -1,21 +1,43 @@
 <p align="center">
-  <h1 align="center">🧠 OmniSLM</h1>
-  <p align="center">
-    <strong>The open-source AI framework for Small Language Models.</strong>
-  </p>
-  <p align="center">
-    Build AI assistants, RAG applications, and autonomous agents — locally or self-hosted.
-  </p>
+  <img src="https://img.shields.io/badge/Python-3.11+-blue.svg" alt="Python Version">
+  <img src="https://img.shields.io/badge/FastAPI-0.100+-green.svg" alt="FastAPI">
+  <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License">
+  <img src="https://img.shields.io/badge/Status-Active-success.svg" alt="Status">
+</p>
+
+<h1 align="center">OmniSLM</h1>
+
+<p align="center">
+  <strong>The open-source AI framework for Small Language Models.</strong><br>
+  Build AI assistants, RAG applications, and autonomous agents — locally or self-hosted.
 </p>
 
 <p align="center">
+  <a href="#problem-statement">Problem</a> •
+  <a href="#proposed-solution">Solution</a> •
   <a href="#features">Features</a> •
-  <a href="#quick-start">Quick Start</a> •
   <a href="#architecture">Architecture</a> •
-  <a href="#api">API</a> •
-  <a href="#roadmap">Roadmap</a> •
-  <a href="#contributing">Contributing</a>
+  <a href="#quick-start">Quick Start</a>
 </p>
+
+---
+
+## Problem Statement
+
+As AI adoption accelerates, organizations face significant challenges with reliance on cloud-based Large Language Models (LLMs):
+1. **Data Privacy & Security**: Sending sensitive, proprietary, or regulated data to third-party cloud providers creates unacceptable security risks.
+2. **Vendor Lock-in**: Hardcoding applications against specific proprietary APIs (like OpenAI or Anthropic) limits flexibility and pricing control.
+3. **High Latency & Costs**: Cloud inference introduces network latency and scaling costs that grow unpredictably with usage.
+4. **Lack of Extensibility**: Existing local solutions often act as simple wrappers rather than robust, modular frameworks suitable for enterprise integration.
+
+## Proposed Solution
+
+**OmniSLM** is designed as a foundational, cross-platform Small Language Model (SLM) Framework. Instead of just wrapping an LLM, OmniSLM provides a production-grade backend architecture based on Domain-Driven Design (DDD) and SOLID principles. 
+
+By leveraging local runtimes (Ollama, vLLM, llama.cpp), organizations can:
+- **Run AI entirely on-premise** or in private clouds, ensuring 100% data sovereignty.
+- **Abstract the inference engine**, allowing developers to swap models and providers seamlessly without rewriting application logic.
+- **Deploy complex AI workflows**, natively supporting RAG (Retrieval-Augmented Generation), autonomous ReAct agents, and long-term semantic memory.
 
 ---
 
@@ -29,7 +51,7 @@
 - 💾 **4-Tier Memory** — Session, conversation, long-term, user memory
 - 🏢 **Enterprise** — Multi-tenancy, RBAC, OAuth2, audit logs, billing
 - 📱 **Cross-Platform** — Web (Next.js), Mobile (Flutter), Desktop (Flutter)
-- 📊 **Observability** — Prometheus metrics, structured logging, health checks
+- 📊 **Observability** — Prometheus metrics, structured logging, OpenTelemetry tracing
 - 🚀 **Deploy Anywhere** — Docker Compose, Kubernetes, or bare metal
 
 ## Supported Models
@@ -42,6 +64,114 @@
 | **Llama** | Llama 3.2 | 1B – 90B |
 | **Mistral** | Mistral 7B, Mixtral | 7B – 47B |
 
+---
+
+## Architecture Diagrams
+
+### 1. System Architecture
+
+```mermaid
+graph TD
+    subgraph Clients
+        W[Web / Next.js]
+        M[Mobile / Flutter]
+        D[Desktop / Flutter]
+    end
+
+    subgraph API Gateway
+        A[FastAPI Gateway]
+        Auth[Auth & Rate Limiting]
+    end
+
+    subgraph Application Services
+        Chat[Chat Service]
+        RAG[RAG Service]
+        Agent[Agent Orchestrator]
+        Mem[Memory Manager]
+    end
+
+    subgraph Core Domain
+        PE[Prompt Engine]
+        ME[Memory Engine]
+        AF[Agent Framework]
+    end
+
+    subgraph Inference Layer
+        OL[Ollama]
+        LL[llama.cpp]
+        VL[vLLM]
+    end
+
+    subgraph Data Storage
+        PG[(PostgreSQL)]
+        RD[(Redis)]
+        QD[(Qdrant Vector DB)]
+    end
+
+    W --> A
+    M --> A
+    D --> A
+    A --> Auth
+    Auth --> Chat
+    Auth --> RAG
+    Auth --> Agent
+    Chat --> PE
+    RAG --> ME
+    Agent --> AF
+    PE --> OL
+    PE --> LL
+    PE --> VL
+    ME --> QD
+    AF --> RD
+    AF --> PG
+```
+
+### 2. Execution Workflow (Agent ReAct Loop)
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant API as FastAPI
+    participant Orchestrator as Agent Orchestrator
+    participant RAG as RAG Service
+    participant LLM as Inference Engine
+    
+    User->>API: Send prompt
+    API->>Orchestrator: Route Request
+    Orchestrator->>RAG: Retrieve Context
+    RAG-->>Orchestrator: Relevant Chunks
+    Orchestrator->>LLM: Execute ReAct Loop (Prompt + Context)
+    LLM-->>Orchestrator: Tool Call Request
+    Orchestrator->>Orchestrator: Execute Tool
+    Orchestrator->>LLM: Submit Tool Results
+    LLM-->>Orchestrator: Final Answer
+    Orchestrator-->>API: Stream Response
+    API-->>User: Display Output
+```
+
+### 3. Dataflow (RAG Ingestion & Retrieval)
+
+```mermaid
+graph LR
+    subgraph Background Ingestion Task
+        Doc[Documents / Web] --> L[Loaders]
+        L --> S[Splitters]
+        S --> E[Embedder Model]
+        E --> VDB[(Qdrant Vector DB)]
+    end
+
+    subgraph Real-time Query Pipeline
+        Q[User Query] --> QE[Embed Query]
+        QE --> VDB
+        VDB --> C[Retrieved Context]
+        C --> P[Prompt Construction]
+        P --> LLM[LLM Generator]
+        LLM --> R[Final Response]
+    end
+```
+
+---
+
 ## Quick Start
 
 ### Prerequisites
@@ -52,8 +182,8 @@
 ### 1. Clone & Setup
 
 ```bash
-git clone https://github.com/your-username/omnislm.git
-cd omnislm
+git clone https://github.com/sudeshsudhii/OmniSLM.git
+cd OmniSLM
 cp .env.example .env
 ```
 
@@ -68,6 +198,7 @@ This starts:
 - **Swagger Docs** → http://localhost:8000/docs
 - **PostgreSQL** → localhost:5432
 - **Redis** → localhost:6379
+- **Qdrant** → localhost:6333
 - **Ollama** → localhost:11434
 
 ### 3. Pull Your First Model
@@ -92,29 +223,7 @@ curl -X POST http://localhost:8000/api/v1/chat/completions \
   }'
 ```
 
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────┐
-│                    Client Layer                      │
-│        Web (Next.js)  •  Mobile/Desktop (Flutter)    │
-├─────────────────────────────────────────────────────┤
-│                  API Gateway (FastAPI)                │
-│     Auth  •  Rate Limiting  •  Request Routing       │
-├─────────────────────────────────────────────────────┤
-│               Application Services                   │
-│   Chat  •  RAG  •  Agents  •  Memory  •  Workflow    │
-├─────────────────────────────────────────────────────┤
-│                 Core Domain Layer                     │
-│  Prompt Engine  •  Memory Engine  •  Agent Framework  │
-├─────────────────────────────────────────────────────┤
-│              AI Inference Layer                       │
-│     Ollama  •  llama.cpp  •  vLLM  •  HuggingFace   │
-├─────────────────────────────────────────────────────┤
-│                   Data Layer                         │
-│     PostgreSQL  •  Redis  •  Qdrant  •  S3           │
-└─────────────────────────────────────────────────────┘
-```
+---
 
 ## Tech Stack
 
@@ -122,26 +231,33 @@ curl -X POST http://localhost:8000/api/v1/chat/completions \
 |-------|-----------|
 | Backend | Python 3.11+, FastAPI, SQLAlchemy 2.0, Pydantic v2 |
 | Database | PostgreSQL 16, Redis 7, Qdrant |
-| AI | Ollama, llama.cpp, vLLM, HuggingFace Transformers |
+| Event Bus | Celery, Redis Pub/Sub |
+| AI | Ollama, llama.cpp, vLLM, SentenceTransformers |
 | Frontend | Next.js 14+ |
 | Mobile/Desktop | Flutter |
 | DevOps | Docker, Kubernetes, GitHub Actions |
 | Observability | Prometheus, structlog, OpenTelemetry |
 
-## API Endpoints
+---
 
-| Endpoint | Description |
-|----------|-------------|
-| `POST /api/v1/auth/register` | Register new user |
-| `POST /api/v1/auth/login` | Login & get JWT |
-| `GET /api/v1/models` | List available models |
-| `POST /api/v1/models/pull` | Download a model |
-| `POST /api/v1/chat/completions` | Streaming chat completion |
-| `GET /api/v1/conversations` | List conversations |
-| `GET /healthz` | Liveness probe |
-| `GET /readyz` | Readiness probe |
+## Roadmap
 
-Full API docs at http://localhost:8000/docs
+- [x] **Phase 1**: MVP — Model engine, chat API, auth, Docker
+- [x] **Phase 2**: Memory + RAG pipeline infrastructure
+- [x] **Phase 3**: Agent framework + workflows and tooling
+- [x] **Phase 4**: Event-Driven Architecture and Observability
+- [ ] **Phase 5**: Advanced MLOps and Evaluation UI
+- [ ] **Phase 6**: AI ecosystem (marketplace, mobile/desktop apps)
+
+## Future Enhancements
+
+As the platform scales into a full SaaS offering, the following enhancements are planned:
+1. **Multi-Agent Orchestration**: Native support for swarm intelligence and hierarchical agent structures (e.g., AutoGen, CrewAI style orchestrations).
+2. **No-Code Workflow Builder**: A visual drag-and-drop web UI to assemble pipelines, map inputs/outputs, and attach tools to agents.
+3. **Advanced RAG Capabilities**: Integration with GraphRAG (Knowledge Graphs) and hybrid keyword/semantic search paradigms (BM25 + Cosine).
+4. **Continuous Evaluation (LLMOps)**: Automated A/B testing of prompts, synthetic data generation for fine-tuning, and robust LLM-as-a-judge dashboards.
+
+---
 
 ## Development
 
@@ -160,14 +276,6 @@ make test
 make lint
 make format
 ```
-
-## Roadmap
-
-- [x] **Phase 1**: MVP — Model engine, chat API, auth, Docker
-- [ ] **Phase 2**: Memory + RAG pipeline
-- [ ] **Phase 3**: Agent framework + workflows
-- [ ] **Phase 4**: Enterprise features (RBAC, billing, MLOps)
-- [ ] **Phase 5**: AI ecosystem (marketplace, mobile/desktop apps)
 
 ## Contributing
 

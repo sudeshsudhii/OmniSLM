@@ -1,0 +1,24 @@
+[project]
+name = "omnislm-cli"
+version = "0.1.0"
+description = "Command-line interface for the OmniSLM framework"
+license = "Apache-2.0"
+requires-python = ">=3.11"
+authors = [{ name = "OmniSLM Team" }]
+dependencies = [
+    "omnislm>=0.1.0",
+    "typer[all]>=0.12.0",
+    "rich>=13.0.0",
+    "jinja2>=3.1.0",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+omnislm = "omnislm.cli.main:app"
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]

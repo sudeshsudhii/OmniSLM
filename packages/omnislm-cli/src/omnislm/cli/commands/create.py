@@ -1,0 +1,283 @@
+"""
+omnislm create — Scaffold a new OmniSLM project from templates.
+"""
+
+from pathlib import Path
+
+import typer
+from rich.console import Console
+
+console = Console()
+
+app = typer.Typer(help="Scaffold a new OmniSLM project")
+
+TEMPLATES = {
+    "chat-app": {
+        "description": "A simple chat application with streaming responses",
+        "features": ["auth", "memory"],
+    },
+    "rag-app": {
+        "description": "RAG-powered Q&A over your documents",
+        "features": ["auth", "memory", "rag"],
+    },
+    "agent-app": {
+        "description": "Autonomous agent with tool use",
+        "features": ["auth", "memory", "agents"],
+    },
+    "workflow-app": {
+        "description": "Multi-step AI workflow with DAG execution",
+        "features": ["auth", "workflows"],
+    },
+    "full-stack": {
+        "description": "Full-stack app with auth, memory, RAG, and agents",
+        "features": ["auth", "memory", "rag", "agents", "observability"],
+    },
+}
+
+
+@app.callback(invoke_without_command=True)
+def create(
+    template: str = typer.Argument(
+        ..., help="Template name (chat-app, rag-app, agent-app, workflow-app, full-stack)"
+    ),
+    name: str = typer.Option(None, "--name", "-n", help="Project name"),
+    directory: str = typer.Option(".", "--dir", "-d", help="Output directory"),
+) -> None:
+    """Scaffold a new OmniSLM project from a template."""
+    if template not in TEMPLATES:
+        console.print(f"[red]Unknown template: {template}[/red]")
+        console.print(
+            f"Available: {', '.join(TEMPLATES.keys())}"
+        )
+        raise typer.Exit(1)
+
+    template_info = TEMPLATES[template]
+    project_name = name or template
+    project_dir = Path(directory) / project_name
+
+    console.print(
+        f"\n[bold blue]Creating '{project_name}' from '{template}' template...[/bold blue]"
+    )
+    console.print(f"   {template_info['description']}")
+
+    # Create project structure
+    project_dir.mkdir(parents=True, exist_ok=True)
+    (project_dir / "app").mkdir(exist_ok=True)
+    (project_dir / "plugins").mkdir(exist_ok=True)
+
+    # Generate omnislm.yaml
+    _write_config(project_dir, project_name, template_info["features"])
+
+    # Generate main.py
+    _write_main(project_dir, template_info["features"])
+
+    # Generate pyproject.toml
+    _write_pyproject(project_dir, project_name)
+
+    # Generate .env.example
+    _write_env_example(project_dir)
+
+    # Generate Dockerfile
+    _write_dockerfile(project_dir)
+
+    # Generate README
+    _write_readme(project_dir, project_name, template_info["description"])
+
+    console.print(f"\n[green]✅ Created '{project_name}' successfully![/green]")
+    console.print(f"\n   [dim]cd {project_name}[/dim]")
+    console.print("   [dim]pip install omnislm[/dim]")
+    console.print("   [dim]omnislm run[/dim]\n")
+
+
+def _write_config(
+    project_dir: Path, name: str, features: list[str]
+) -> None:
+    """Generate omnislm.yaml."""
+    lines = [
+        f'name: "{name}"',
+        'version: "0.1.0"',
+        "debug: true",
+        "",
+        "runtime:",
+        "  default: ollama",
+        "  ollama_base_url: http://localhost:11434",
+        '  ollama_default_model: "qwen2.5:7b"',
+        "",
+    ]
+
+    if "auth" in features:
+        lines.extend([
+            "auth:",
+            "  enabled: true",
+            "  provider: jwt",
+            "  secret_key: ${JWT_SECRET_KEY:-dev-secret-change-me}",
+            "",
+        ])
+
+    if "memory" in features:
+        lines.extend([
+            "memory:",
+            "  enabled: true",
+            "  backend: redis",
+            "  redis_url: redis://localhost:6379/0",
+            "",
+        ])
+
+    if "rag" in features:
+        lines.extend([
+            "rag:",
+            "  enabled: true",
+            "  vector_store: qdrant",
+            "  qdrant_url: http://localhost:6333",
+            "  embedder: sentence-transformers",
+            '  embedder_model: "all-MiniLM-L6-v2"',
+            "",
+        ])
+
+    if "agents" in features:
+        lines.extend([
+            "agents:",
+            "  enabled: true",
+            "  default_strategy: react",
+            "  max_iterations: 10",
+            "",
+        ])
+
+    if "workflows" in features:
+        lines.extend([
+            "# Workflows are enabled programmatically in main.py",
+            "",
+        ])
+
+    if "observability" in features:
+        lines.extend([
+            "observability:",
+            "  metrics: true",
+            "  tracing: false",
+            '  log_level: "INFO"',
+            '  log_format: "console"',
+            "",
+        ])
+
+    config_path = project_dir / "omnislm.yaml"
+    config_path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def _write_main(project_dir: Path, features: list[str]) -> None:
+    """Generate app/main.py."""
+    lines = [
+        '"""',
+        f"Application entry point.",
+        "",
+        "Generated by: omnislm create",
+        '"""',
+        "",
+        "from omnislm import OmniSLM",
+        "",
+        "",
+        'app = OmniSLM.from_config("omnislm.yaml")',
+        "",
+    ]
+
+    # Add feature-specific code
+    if "agents" in features:
+        lines.extend([
+            "# Register custom tools",
+            "# from omnislm import tool",
+            "#",
+            '# @tool(name="my_tool", description="My custom tool")',
+            "# async def my_tool(query: str) -> str:",
+            '#     return f"Result for {query}"',
+            "",
+        ])
+
+    if "workflows" in features:
+        lines.extend([
+            "app.enable_workflows()",
+            "",
+        ])
+
+    lines.extend([
+        "",
+        'if __name__ == "__main__":',
+        "    app.run()",
+        "",
+    ])
+
+    main_path = project_dir / "app" / "main.py"
+    main_path.write_text("\n".join(lines), encoding="utf-8")
+
+    # Create __init__.py
+    init_path = project_dir / "app" / "__init__.py"
+    init_path.write_text("", encoding="utf-8")
+
+
+def _write_pyproject(project_dir: Path, name: str) -> None:
+    """Generate pyproject.toml."""
+    content = f'''[project]
+name = "{name}"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["omnislm[all]>=0.1.0"]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+'''
+    (project_dir / "pyproject.toml").write_text(content, encoding="utf-8")
+
+
+def _write_env_example(project_dir: Path) -> None:
+    """Generate .env.example."""
+    content = """# OmniSLM Environment Variables
+JWT_SECRET_KEY=change-this-to-a-random-64-char-string
+DATABASE_URL=postgresql+asyncpg://omnislm:omnislm@localhost:5432/omnislm
+REDIS_URL=redis://localhost:6379/0
+OLLAMA_BASE_URL=http://localhost:11434
+"""
+    (project_dir / ".env.example").write_text(content, encoding="utf-8")
+
+
+def _write_dockerfile(project_dir: Path) -> None:
+    """Generate Dockerfile."""
+    content = """FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY pyproject.toml .
+RUN pip install --no-cache-dir .
+
+COPY . .
+
+EXPOSE 8000
+CMD ["omnislm", "run", "--host", "0.0.0.0", "--port", "8000"]
+"""
+    (project_dir / "Dockerfile").write_text(content, encoding="utf-8")
+
+
+def _write_readme(project_dir: Path, name: str, description: str) -> None:
+    """Generate README.md."""
+    content = f"""# {name}
+
+{description}
+
+Built with [OmniSLM](https://github.com/sudeshsudhii/OmniSLM) — The open-source AI framework for Small Language Models.
+
+## Quick Start
+
+```bash
+pip install omnislm
+omnislm run
+```
+
+## Configuration
+
+Edit `omnislm.yaml` to configure runtimes, memory, RAG, agents, and plugins.
+
+## Development
+
+```bash
+omnislm run --reload
+```
+"""
+    (project_dir / "README.md").write_text(content, encoding="utf-8")

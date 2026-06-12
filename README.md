@@ -1,286 +1,218 @@
-
-
 <h1 align="center">OmniSLM</h1>
 
 <p align="center">
-  <strong>The open-source AI framework for Small Language Models.</strong><br>
+  <strong>The modular, open-source AI framework for Small Language Models.</strong><br>
   Build AI assistants, RAG applications, and autonomous agents — locally or self-hosted.
 </p>
 
 <p align="center">
-  <a href="#problem-statement">Problem</a> •
-  <a href="#proposed-solution">Solution</a> •
+  <a href="#why-omnislm">Why OmniSLM?</a> •
   <a href="#features">Features</a> •
+  <a href="#quick-start">Quick Start</a> •
   <a href="#architecture">Architecture</a> •
-  <a href="#quick-start">Quick Start</a>
+  <a href="#development">Development</a>
 </p>
 
 ---
 
-## Problem Statement
+## Why OmniSLM?
 
-As AI adoption accelerates, organizations face significant challenges with reliance on cloud-based Large Language Models (LLMs):
-1. **Data Privacy & Security**: Sending sensitive, proprietary, or regulated data to third-party cloud providers creates unacceptable security risks.
-2. **Vendor Lock-in**: Hardcoding applications against specific proprietary APIs (like OpenAI or Anthropic) limits flexibility and pricing control.
-3. **High Latency & Costs**: Cloud inference introduces network latency and scaling costs that grow unpredictably with usage.
-4. **Lack of Extensibility**: Existing local solutions often act as simple wrappers rather than robust, modular frameworks suitable for enterprise integration.
+As AI adoption accelerates, organizations face significant challenges with reliance on cloud-based LLMs:
+1. **Data Privacy**: Sending sensitive data to third-party cloud providers creates unacceptable risks.
+2. **Vendor Lock-in**: Hardcoding applications against specific APIs limits flexibility and pricing control.
+3. **Lack of Extensibility**: Existing local solutions often act as simple wrappers rather than robust, modular frameworks suitable for enterprise integration.
 
-## Proposed Solution
-
-**OmniSLM** is designed as a foundational, cross-platform Small Language Model (SLM) Framework. Instead of just wrapping an LLM, OmniSLM provides a production-grade backend architecture based on Domain-Driven Design (DDD) and SOLID principles. 
-
-By leveraging local runtimes (Ollama, vLLM, llama.cpp), organizations can:
-- **Run AI entirely on-premise** or in private clouds, ensuring 100% data sovereignty.
-- **Abstract the inference engine**, allowing developers to swap models and providers seamlessly without rewriting application logic.
-- **Deploy complex AI workflows**, natively supporting RAG (Retrieval-Augmented Generation), autonomous ReAct agents, and long-term semantic memory.
+**OmniSLM** solves this by providing a production-grade, API-first framework based on Clean Architecture principles. It allows you to build complex AI applications with a fluent API while maintaining 100% data sovereignty.
 
 ---
 
 ## Features
 
-- **Multi-Runtime Model Engine** — Ollama, llama.cpp, vLLM, HuggingFace
-- **RAG Pipeline** — PDF, DOCX, Web, GitHub → Chunk → Embed → Retrieve → Rerank
-- **Agent Framework** — Planner, Research, Coding, Reviewer, Executor agents
-- **Tool Calling** — Calculator, file ops, database, REST APIs, custom plugins
-- **Workflow Engine** — DAG pipelines, scheduling, agent orchestration
-- **4-Tier Memory** — Session, conversation, long-term, user memory
-- **Enterprise** — Multi-tenancy, RBAC, OAuth2, audit logs, billing
-- **Cross-Platform** — Web (Next.js), Mobile (Flutter), Desktop (Flutter)
-- **Observability** — Prometheus metrics, structured logging, OpenTelemetry tracing
-- **Deploy Anywhere** — Docker Compose, Kubernetes, or bare metal
-
-## Supported Models
-
-| Family | Models | Parameters |
-|--------|--------|------------|
-| **Qwen** | Qwen 2.5 | 0.5B – 72B |
-| **Gemma** | Gemma 3 | 1B – 27B |
-| **Phi** | Phi-4 | 3.8B – 14B |
-| **Llama** | Llama 3.2 | 1B – 90B |
-| **Mistral** | Mistral 7B, Mixtral | 7B – 47B |
-
----
-
-## Architecture Diagrams
-
-### 1. System Architecture
-
-```mermaid
-graph TD
-    subgraph Clients [Clients]
-        W[Web / Next.js]
-        M[Mobile / Flutter]
-        D[Desktop / Flutter]
-    end
-
-    subgraph API_Gateway [API Gateway]
-        A[FastAPI Gateway]
-        Auth[Auth & Rate Limiting]
-    end
-
-    subgraph App_Services [Application Services]
-        Chat[Chat Service]
-        RAG[RAG Service]
-        Agent[Agent Orchestrator]
-        Mem[Memory Manager]
-    end
-
-    subgraph Core_Domain [Core Domain]
-        PE[Prompt Engine]
-        ME[Memory Engine]
-        AF[Agent Framework]
-    end
-
-    subgraph Inference_Layer [Inference Layer]
-        OL[Ollama]
-        LL[llama.cpp]
-        VL[vLLM]
-    end
-
-    subgraph Data_Storage [Data Storage]
-        PG[(PostgreSQL)]
-        RD[(Redis)]
-        QD[(Qdrant Vector DB)]
-    end
-
-    W --> A
-    M --> A
-    D --> A
-    A --> Auth
-    Auth --> Chat
-    Auth --> RAG
-    Auth --> Agent
-    Chat --> PE
-    RAG --> ME
-    Agent --> AF
-    PE --> OL
-    PE --> LL
-    PE --> VL
-    ME --> QD
-    AF --> RD
-    AF --> PG
-```
-
-### 2. Execution Workflow (Agent ReAct Loop)
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant API as FastAPI
-    participant Orchestrator as Agent_Orchestrator
-    participant RAG as RAG_Service
-    participant LLM as Inference_Engine
-    
-    User->>API: Send prompt
-    API->>Orchestrator: Route Request
-    Orchestrator->>RAG: Retrieve Context
-    RAG-->>Orchestrator: Relevant Chunks
-    Orchestrator->>LLM: Execute ReAct Loop (Prompt + Context)
-    LLM-->>Orchestrator: Tool Call Request
-    Orchestrator->>Orchestrator: Execute Tool
-    Orchestrator->>LLM: Submit Tool Results
-    LLM-->>Orchestrator: Final Answer
-    Orchestrator-->>API: Stream Response
-    API-->>User: Display Output
-```
-
-### 3. Dataflow (RAG Ingestion & Retrieval)
-
-```mermaid
-graph LR
-    subgraph Ingestion_Task [Background Ingestion Task]
-        Doc[Documents / Web] --> L[Loaders]
-        L --> S[Splitters]
-        S --> E[Embedder Model]
-        E --> VDB[(Qdrant Vector DB)]
-    end
-
-    subgraph Query_Pipeline [Real-time Query Pipeline]
-        Q[User Query] --> QE[Embed Query]
-        QE --> VDB
-        VDB --> C[Retrieved Context]
-        C --> P[Prompt Construction]
-        P --> LLM[LLM Generator]
-        LLM --> R[Final Response]
-    end
-```
+- **Multi-Runtime Engine** — Swap between Ollama, vLLM, and llama.cpp with zero code changes.
+- **Fluent SDK** — Build applications declaratively with the `OmniSLM` class.
+- **RAG Pipeline** — Built-in loaders (PDF, Web, Text), chunkers, embedders, and vector store adapters.
+- **Agent Framework** — ReAct agents with autonomous tool execution.
+- **Workflow Engine** — DAG-based pipeline execution with topological sorting.
+- **Multi-Tier Memory** — Session (Redis/In-memory) and Semantic (Qdrant) recall.
+- **Plugin System** — Extend the framework with custom tools, routes, and middleware.
+- **CLI Tools** — Scaffold projects, pull models, and manage configuration via `omnislm`.
 
 ---
 
 ## Quick Start
 
-### Prerequisites
+### 1. Install OmniSLM
 
-- [Docker](https://docs.docker.com/get-docker/) & Docker Compose
-- (Optional) NVIDIA GPU + [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/)
-
-### 1. Clone & Setup
+Install the core framework and any optional subsystems you need:
 
 ```bash
-git clone https://github.com/sudeshsudhii/OmniSLM.git
-cd OmniSLM
-cp .env.example .env
+pip install "omnislm[all]"
 ```
 
-### 2. Start All Services
+### 2. Scaffold a Project
+
+Use the CLI to generate a new project from a template:
 
 ```bash
-docker compose up -d
+omnislm create chat-app --name my-ai-app
+cd my-ai-app
 ```
 
-This starts:
-- **API Server** → http://localhost:8000
-- **Swagger Docs** → http://localhost:8000/docs
-- **PostgreSQL** → localhost:5432
-- **Redis** → localhost:6379
-- **Qdrant** → localhost:6333
-- **Ollama** → localhost:11434
+### 3. Build Your Application
 
-### 3. Pull Your First Model
+OmniSLM provides a fluent builder API. Here is a complete AI server in 6 lines of code:
 
-```bash
-curl -X POST http://localhost:8000/api/v1/models/pull \
-  -H "Authorization: Bearer <your-token>" \
-  -H "Content-Type: application/json" \
-  -d '{"name": "qwen2.5:3b"}'
+```python
+from omnislm import OmniSLM
+
+app = OmniSLM(name="My AI App", debug=True)
+app.enable_memory()
+app.enable_rag()
+app.enable_agents()
+app.install_plugin("calculator")
+
+if __name__ == "__main__":
+    app.run()
 ```
 
-### 4. Start Chatting
+### 4. Run the Server
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/chat/completions \
-  -H "Authorization: Bearer <your-token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "qwen2.5:3b",
-    "messages": [{"role": "user", "content": "Hello!"}],
-    "stream": true
-  }'
+omnislm run --reload
+```
+Access your API at `http://localhost:8000/docs`.
+
+---
+
+## Architecture
+
+OmniSLM is designed as a highly modular monorepo. The framework is strictly decoupled from the application layer.
+
+### Package Ecosystem
+
+```mermaid
+graph TD
+    SDK["omnislm-sdk<br/>(from omnislm import OmniSLM)"]
+    CLI["omnislm-cli<br/>(omnislm create / run)"]
+    CORE["omnislm-core<br/>(Interfaces, DI, Events)"]
+    RT["omnislm-runtimes<br/>(Ollama, vLLM)"]
+    MEM["omnislm-memory<br/>(Session, Semantic)"]
+    RAG["omnislm-rag<br/>(Pipeline, Loaders)"]
+    AGT["omnislm-agents<br/>(ReAct Agent)"]
+    WF["omnislm-workflows<br/>(DAG Engine)"]
+    PLG["omnislm-plugins<br/>(Plugin System)"]
+    OBS["omnislm-observability<br/>(Metrics, Logging)"]
+    EVAL["omnislm-evaluation<br/>(LLM Judge)"]
+    
+    CLI --> SDK
+    SDK --> CORE
+    SDK --> RT
+    SDK --> MEM
+    SDK --> RAG
+    SDK --> AGT
+    SDK --> WF
+    SDK --> PLG
+    SDK --> OBS
+    SDK --> EVAL
+    
+    RT --> CORE
+    MEM --> CORE
+    RAG --> CORE
+    AGT --> CORE
+    WF --> CORE
+    PLG --> CORE
+    OBS --> CORE
+    EVAL --> CORE
+    
+    style CORE fill:#1a1a2e,stroke:#e94560,color:#fff
+    style SDK fill:#0f3460,stroke:#e94560,color:#fff
+    style CLI fill:#16213e,stroke:#0f3460,color:#fff
+```
+
+### Subsystem Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant SDK as OmniSLM App
+    participant AGT as Agent Framework
+    participant RAG as RAG Pipeline
+    participant RT as Runtime (Ollama)
+    
+    User->>SDK: POST /chat "What is the revenue?"
+    SDK->>AGT: agent.run()
+    AGT->>RAG: retrieve(query)
+    RAG-->>AGT: Relevant Context
+    AGT->>RT: chat(prompt + context)
+    RT-->>AGT: Tool Call (Calculator)
+    AGT->>AGT: Execute Tool
+    AGT->>RT: Submit Tool Result
+    RT-->>AGT: Final Answer
+    AGT-->>SDK: Response
+    SDK-->>User: Streaming Output
 ```
 
 ---
 
-## Tech Stack
+## Configuration
 
-| Layer | Technology |
-|-------|-----------|
-| Backend | Python 3.11+, FastAPI, SQLAlchemy 2.0, Pydantic v2 |
-| Database | PostgreSQL 16, Redis 7, Qdrant |
-| Event Bus | Celery, Redis Pub/Sub |
-| AI | Ollama, llama.cpp, vLLM, SentenceTransformers |
-| Frontend | Next.js 14+ |
-| Mobile/Desktop | Flutter |
-| DevOps | Docker, Kubernetes, GitHub Actions |
-| Observability | Prometheus, structlog, OpenTelemetry |
+Configuration is handled seamlessly via `omnislm.yaml` or environment variables:
 
----
+```yaml
+name: "My Enterprise App"
+version: "1.0.0"
 
-## Roadmap
+runtime:
+  default: ollama
+  ollama_base_url: http://localhost:11434
+  ollama_default_model: "qwen2.5:7b"
 
-- [x] **Phase 1**: MVP — Model engine, chat API, auth, Docker
-- [x] **Phase 2**: Memory + RAG pipeline infrastructure
-- [x] **Phase 3**: Agent framework + workflows and tooling
-- [x] **Phase 4**: Event-Driven Architecture and Observability
-- [ ] **Phase 5**: Advanced MLOps and Evaluation UI
-- [ ] **Phase 6**: AI ecosystem (marketplace, mobile/desktop apps)
+memory:
+  enabled: true
+  backend: redis
+  redis_url: redis://localhost:6379/0
 
-## Future Enhancements
-
-As the platform scales into a full SaaS offering, the following enhancements are planned:
-1. **Multi-Agent Orchestration**: Native support for swarm intelligence and hierarchical agent structures (e.g., AutoGen, CrewAI style orchestrations).
-2. **No-Code Workflow Builder**: A visual drag-and-drop web UI to assemble pipelines, map inputs/outputs, and attach tools to agents.
-3. **Advanced RAG Capabilities**: Integration with GraphRAG (Knowledge Graphs) and hybrid keyword/semantic search paradigms (BM25 + Cosine).
-4. **Continuous Evaluation (LLMOps)**: Automated A/B testing of prompts, synthetic data generation for fine-tuning, and robust LLM-as-a-judge dashboards.
+rag:
+  enabled: true
+  vector_store: qdrant
+  embedder: sentence-transformers
+```
 
 ---
 
 ## Development
 
-```bash
-# Install dependencies
-pip install poetry
-poetry install
+If you want to contribute to the OmniSLM framework itself:
 
-# Run locally
-make dev
+### Setup Monorepo
 
-# Run tests
-make test
+We provide automated scripts to install all 11 packages in editable mode:
 
-# Lint & format
-make lint
-make format
+**Windows:**
+```cmd
+scripts\dev-install.bat
 ```
 
-## Contributing
+**macOS/Linux:**
+```bash
+chmod +x scripts/dev-install.sh
+./scripts/dev-install.sh
+```
 
-We welcome contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting PRs.
+### Running the Reference App
+
+The framework includes a full reference implementation of an API server in `apps/api-server/`:
+
+```bash
+cd apps/api-server
+omnislm run
+```
+
+---
 
 ## License
 
 [Apache License 2.0](LICENSE)
-
----
 
 <p align="center">
   Built with ❤️ for the open-source AI community

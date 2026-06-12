@@ -1,0 +1,19 @@
+[project]
+name = "omnislm-rag"
+version = "0.1.0"
+description = "RAG pipeline for OmniSLM"
+license = "Apache-2.0"
+requires-python = ">=3.11"
+dependencies = ["omnislm-core>=0.1.0"]
+
+[project.optional-dependencies]
+pdf = ["pypdf>=4.0"]
+qdrant = ["qdrant-client>=1.9"]
+sentence-transformers = ["sentence-transformers>=3.0"]
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
